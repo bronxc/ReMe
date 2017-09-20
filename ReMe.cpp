@@ -57,9 +57,9 @@ PIMAGE_TLS_CALLBACK pTLS_CALLBACKs[]={tls_callback1,tls_callback2,0}; //end with
 
 
 
-bool IsHook(FARPROC   pFuncAddr)
+bool IsHook(FARPROC pFuncAddr)
 {
-	FARPROC   pFuncAddrtmp = pFuncAddr;
+	FARPROC pFuncAddrtmp = pFuncAddr;
 	//check softbreak
 	if(*(BYTE*)pFuncAddrtmp==0xcc)
 	{
@@ -108,9 +108,9 @@ DWORD GetProcessIDByName(char *pProcessName)
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0); 
 	if(hSnapshot == NULL)
 		return false;
-	if (!Process32First(hSnapshot, &processinfo))
+	if(!Process32First(hSnapshot, &processinfo))
 		return false;
-	while (Process32Next(hSnapshot,&processinfo))
+	while(Process32Next(hSnapshot,&processinfo))
 	{
 		if(_stricmp(pProcessName,processinfo.szExeFile)==0)
 			return processinfo.th32ProcessID; 
@@ -158,54 +158,37 @@ bool FD_IsDebuggerPresent()
 {
 
 	//HMODULE hDllLib = LoadLibrary(_T("kernel32.dll"));
-	//FARPROC   pFuncAddr = GetFuncAddr("kernel32.dll","IsDebuggerPresent");
+	FARPROC   pFuncAddr = GetFuncAddr("kernel32.dll","IsDebuggerPresent");
 	//printf("IsDebuggerPresent_addr:%x",pFuncAddr);
-	//if (NULL==pFuncAddr)
+	if (NULL==pFuncAddr)
 	{
-		//return false;
+		return false;
 	} 
-	//else
+	else
 	{
-		//if(IsHook(pFuncAddr))
+		FARPROC pIsDebuggerPresent = pFuncAddr;
+		if(pIsDebuggerPresent())
 		{
-			//return true;
-			//printf("IsHook:ture");
+			return true;//is debugging
 		}
-		//pIsDebuggerPresent=pFuncAddr;
-		__asm{
-			mov eax, fs:[18h]
-			mov eax, [eax+30h]
-			movzx eax, byte ptr [eax+2h] 
-			//call pFuncAddr
-			//error?
-			test eax,eax; 
-			//error! 
-			je rf_label; 
-			//no error 
-			pop eax; 
-			test eax,eax 
-			je rf_label; 
-		} 
-		//printf("eax:ture");
-		return true;//is debugging
-	rf_label: 
-		return false; 
+		return false;
 	}
 }
-
+//the same as ↑
 bool FD_PEB_BeingDebuggedFlag()
 {
 	__asm
 	{
 		//EAX=TEB.ProcessEnvironmentBlock
-		mov eax, fs:[30h] 
-		inc eax
-			inc eax
-			mov eax, [eax]
+		mov eax, fs:[30h]
+		//inc eax
+		//inc eax
+		//mov eax, [eax]
+		mov eax [eax+2h]
 		//AL=PEB.BeingDebugged
 		and eax,0x000000ff
-			test eax, eax
-			jne rt_label
+		test eax, eax
+		jne rt_label
 	}
 	return false;
 rt_label:
@@ -222,31 +205,32 @@ bool FD_NtQueryInfoProc_DbgPort()
 	{ 
 		__asm{ 
 			push 0
-				//ProcessInformationLength 
-				push 4
-				//ProcessInformation
-				push eax 
-				push esp 
-				//ProcessDebugPort 
-				push 7
-				//ProcessHandle 
-				push 0xffffffff
-				call pFuncAddr 
-				//error?
-				test eax,eax; 
-			//error! 
-			je rf_label; 
-			//no error 
-			pop eax; 
-			test eax,eax 
-				je rf_label; 
-		} 
+			//ProcessInformationLength
+			push 4
+			//ProcessInformation
+			push eax
+			push esp
+			//ProcessDebugPort
+			push 7
+			//ProcessHandle
+			push 0xffffffff
+			call pFuncAddr
+			//error?
+			test eax,eax;
+			//error!
+			je rf_label;
+			//no error
+			pop eax;
+			test eax,eax
+			je rf_label;
+		}
 		return true;//is debugging
-rf_label: 
+rf_label:
 		//printf("DbgPort:false");
-		return false; 
+		return false;
 	} 
 }
+
 bool FD_SeDebugPrivilege()
 {
 	char *pProcessName ="csrss.exe";
