@@ -272,26 +272,27 @@ bool FD_NtQueryInfoProc_DbgFlags()
 		return false;
 	else
 	{ 
-		__asm{ 
+		__asm{
+
 			push 0
-				//ProcessInformationLength 
-				push 4
-				//ProcessInformation
-				push eax 
-				push esp 
-				//ProcessDebugFlags 
-				push 0x0000001f
-				//ProcessHandle 
-				push 0xffffffff
-				call pFuncAddr 
-				//error?
-				test eax,eax; 
-			//error! 
-			je rf_label; 
-			//no error 
-			pop eax; 
-			test eax,eax 
-				je rf_label; 
+			//ProcessInformationLength
+			push 4
+			//ProcessInformation
+			push eax
+			push esp
+			//ProcessDebugFlags
+			push 0x0000001f
+			//ProcessHandle
+			push 0xffffffff
+			call pFuncAddr 
+			//error?
+			test eax,eax;
+			//error!
+			je rf_label;
+			//no error
+			pop eax;
+			test eax,eax
+			je rf_label;
 		} 
 		return true;//is debugging
 rf_label: 
@@ -337,13 +338,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		__asm{
 			sub esp ,4
-				mov eax,SKIPBOARD1
-				mov [esp],eax
-				ret
+			mov eax,SKIPBOARD1
+			mov [esp],eax
+			ret
 		}
 FUNC:
 		if(FD_NtQueryInfoProc_DbgPort())
 			return 0;
+		//fake code begin
 		hFile = CreateFile(LPCSTR("d:\\nottheflag.encrypt"),GENERIC_READ,          
 							FILE_SHARE_READ,
 							NULL,               
@@ -473,7 +475,7 @@ Next1:
 											//printf("[+]Congratulation!");
                                             __asm{
                                                 xor eax,eax
-													 push eax
+												push eax
                                                 cmp eax,0x08
                                                 jne SKIPBOARD3
                                                 __emit 0x8B
@@ -499,7 +501,10 @@ Next1:
 	
 SKIPBOARD1:
 		if(FD_IsDebuggerPresent())
+		{
+			printf("[*] Plz input the flag:\n");
 			return 0;
+		}
 		printf("[*] Plz input the flag:\n");
 		scanf("%s",inputstr);
 		p = (int)strcmp(flag1,inputstr);
