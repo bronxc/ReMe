@@ -4,6 +4,22 @@
 #include "tlhelp32.h"
 #include "winternl.h"//for using NtQueryInformationProcess
 
+bool IsHook(DWORD  pFuncAddr)
+bool FD_IsDebuggerPresent()
+bool FD_PEB_BeingDebuggedFlag()
+bool FD_PEB_NtGlobalFlags()
+bool FD_Heap_HeapFlags()
+bool FD_Heap_ForceFlags()
+bool FD_Heap_Tail()
+bool FD_CheckRemoteDebuggerPresent()
+bool FD_NtQueryInfoProc_DbgPort()
+bool FD_NtQueryInfoProc_DbgObjHandle()
+bool FD_NtQueryInfoProc_DbgFlags()
+bool FD_SeDebugPrivilege()
+bool FD_Parent_Process()
+bool FD_DebugObject_NtQueryObject()
+
+
 typedef struct __PUBLIC_OBJECT_TYPE_INFORMATION {
 	UNICODE_STRING TypeName;
 	ULONG Reserved [22];    // reserved for internal use
@@ -26,7 +42,6 @@ DWORD GetFuncAddr(const char* sDllName,const char* sFuncName)
 	}
 	return pFuncAddr;
 }
-
 DWORD GetProcessIDByName(char *pProcessName) 
 { 
 	 PROCESSENTRY32 processinfo; 
